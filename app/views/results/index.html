@@ -13,14 +13,14 @@
         <div class="filter-category">
           <h4 class="heading-small filter-heading">Location</h4>
           <div class="filters">
-              50 miles around {{ data['postcode-town-or-city'] or 'SW13' }}
+              {{ data['postcode-town-or-city'] or 'SW13' }}
           </div>
           <div class="filter-link">
             <a href="/results/filters/location">Change location</a>
           </div>
         </div>
 
-        <div class="filter-category ">
+        <div class="filter-category">
           <h4 class="heading-small filter-heading">Subject</h4>
           <div class="filters">
             Business studies
@@ -166,6 +166,18 @@
 
         {% for result in results %}
           <div class="grid-row results">
+            {% if loop.index == 1 %}
+              <h2 class="heading-large">Within 5 miles</h2>
+            {% endif %}
+
+            {% if loop.index == 3 %}
+              <h2 class="heading-large">Within 10 miles</h2>
+            {% endif %}
+
+            {% if loop.index == 4 %}
+              <h2 class="heading-large">Within 20 miles</h2>
+            {% endif %}
+
             <h2 class="heading-medium">
               <a href="{{result.url}}">{{result.subject}}</a>
             </h2>
