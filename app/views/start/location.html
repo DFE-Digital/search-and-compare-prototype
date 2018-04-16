@@ -21,7 +21,28 @@ Question page
         <div class="form-group">
           {% set postcodeFields %}
             {{ macros.textbox("postcode-town-or-city", "Postcode, town or city")}}
-            {{ macros.selectBox("location-radius", "Within radius", "location-radius", ["5 miles","10 miles","20 miles","50 miles","100 miles"]) }}
+
+            <h2 class="heading-medium">Within</h2>
+            {% set radfields = [
+                {
+                  name: '5 miles'
+                },
+                {
+                  name: '10 miles'
+                },
+                {
+                  name: '20 miles'
+                },
+                {
+                  name: '50 miles'
+                },
+                {
+                  name: '100 miles'
+                }
+              ]
+            %}
+
+            {{ macros.radioGroup('radius', radfields) }}
           {% endset %}
 
           {% set trainingProviderFields %}
