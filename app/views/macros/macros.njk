@@ -37,15 +37,15 @@
 #}
 {% macro radioGroup(name, fields) %}
   {% for field in fields %}
-    <div class="multiple-choice" data-target="radio-part-{{ loop.index }}-extra">
+    <div class="multiple-choice" data-target="{{ name }}-radio-part-{{ loop.index }}-extra">
       <input required
-        id="radio-part-{{ loop.index }}"
+        id="{{ name }}-radio-part-{{ loop.index }}"
         type="radio"
         name="{{ name }}"
         value="{{ field.name }}"
         {{ checked(name, field.name) }}
       >
-      <label for="radio-part-{{ loop.index }}">
+      <label for="{{ name }}-radio-part-{{ loop.index }}">
         <span class="bold">{{ field.name }}</span>
         {% if field.text %}
           {{ field.text | safe }}
@@ -53,7 +53,7 @@
       </label>
     </div>
     {% if field.more %}
-      <div class="panel panel-border-wide js-hidden" id="radio-part-{{ loop.index }}-extra">
+      <div class="panel panel-border-wide js-hidden" id="{{ name }}-radio-part-{{ loop.index }}-extra">
         {{ field.more | safe }}
       </div>
     {% endif %}
