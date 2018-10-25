@@ -6,6 +6,76 @@
 {% set isMap = true %}
 
 <style>
+  /* The location pointed to by the popup tip. */
+  .popup-tip-anchor {
+    height: 0;
+    position: absolute;
+    /* The max width of the info window. */
+    width: 200px;
+  }
+  /* The bubble is anchored above the tip. */
+  .popup-bubble-anchor {
+    position: absolute;
+    width: 100%;
+    bottom: /* TIP_HEIGHT= */ 8px;
+    left: 0;
+  }
+
+  .popup-bubble-anchor:hover {
+    z-index: 1000;
+  }
+
+  /* Draw the tip. */
+  .popup-bubble-anchor::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* Center the tip horizontally. */
+    transform: translate(-50%, 0);
+    /* The tip is a https://css-tricks.com/snippets/css/css-triangle/ */
+    width: 0;
+    height: 0;
+    /* The tip is 8px high, and 12px wide. */
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: /* TIP_HEIGHT= */ 8px solid black;
+  }
+  /* The popup bubble itself. */
+  .popup-bubble-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -100%);
+    /* Style the info window. */
+    background-color: white;
+    padding: 5px 8px;
+    font-size: 14px;
+    overflow-y: auto;
+    max-height: 60px;
+    box-shadow: 0px 1px 2px 1px rgba(0,0,0,0.2);
+    border: 2px solid #000;
+    max-width: 120px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .popup-tip-anchor.open .popup-bubble-content {
+    max-width: none;
+    max-height: none;
+    font-size: 16px;
+    padding: 10px;
+  }
+
+  .popup-bubble-content .heading-medium {
+    margin-top: 5px;
+  }
+
+  /* .popup-bubble-content:hover {
+    max-width: none;
+  } */
+
   #map {
     position: fixed !important;
     top: 63px;
@@ -91,6 +161,8 @@
   <h1 class="heading-xlarge">
     {{ title }}
   </h1>
+
+  <div id="hello">University College London</div>
 
   {{ data['latLong'] }}
 
@@ -265,6 +337,119 @@
       "-0.4em"}}}e[d].onAdd=function(){var a=this.a=document.createElement("canvas");a.style.position="absolute";var b=a.getContext("2d");b.lineJoin="round";b.textBaseline="top";h(this);(b=this.getPanes())&&b.mapPane.appendChild(a)};e[d].onAdd=e[d].onAdd;
       e[d].draw=function(){var a=this.getProjection();if(a&&this.a){var b=this.get("position");if(b){b=a.fromLatLngToDivPixel(b);a=this.a.style;a.top=b.y+"px";a.left=b.x+"px";var b=this.get("minZoom"),f=this.get("maxZoom");if(b===void 0&&f===void 0)b="";else{var c=this.getMap();c?(c=c.getZoom(),b=c<b||c>f?"hidden":""):b=""}a.visibility=b}}};e[d].draw=e[d].draw;e[d].onRemove=function(){var a=this.a;a&&a.parentNode&&a.parentNode.removeChild(a)};e[d].onRemove=e[d].onRemove;
 
+      /** Defines the Popup class. */
+      function definePopupClass() {
+        /**
+         * A customized popup on the map.
+         * @param {!google.maps.LatLng} position
+         * @param {!Element} content
+         * @constructor
+         * @extends {google.maps.OverlayView}
+         */
+        Popup = function(position, content) {
+          this.position = position;
+          content.classList.add('popup-bubble-content');
+
+          var pixelOffset = document.createElement('div');
+          pixelOffset.classList.add('popup-bubble-anchor');
+          pixelOffset.appendChild(content);
+
+          this.anchor = document.createElement('div');
+          this.anchor.classList.add('popup-tip-anchor');
+          this.anchor.appendChild(pixelOffset);
+
+          // Optionally stop clicks, etc., from bubbling up to the map.
+          this.stopEventPropagation();
+        };
+        // NOTE: google.maps.OverlayView is only defined once the Maps API has
+        // loaded. That is why Popup is defined inside initMap().
+        Popup.prototype = Object.create(google.maps.OverlayView.prototype);
+
+        /** Called when the popup is added to the map. */
+        Popup.prototype.onAdd = function() {
+          this.getPanes().floatPane.appendChild(this.anchor);
+        };
+
+        /** Called when the popup is removed from the map. */
+        Popup.prototype.onRemove = function() {
+          if (this.anchor.parentElement) {
+            this.anchor.parentElement.removeChild(this.anchor);
+          }
+        };
+
+        /** Called when the popup needs to draw itself. */
+        Popup.prototype.draw = function() {
+          var divPosition = this.getProjection().fromLatLngToDivPixel(this.position);
+          // Hide the popup when it is far out of view.
+          var display =
+              Math.abs(divPosition.x) < 4000 && Math.abs(divPosition.y) < 4000 ?
+              'block' :
+              'none';
+
+          if (display === 'block') {
+            this.anchor.style.left = divPosition.x + 'px';
+            this.anchor.style.top = divPosition.y + 'px';
+          }
+          if (this.anchor.style.display !== display) {
+            this.anchor.style.display = display;
+          }
+        };
+
+        /** Stops clicks/drags from bubbling up to the map. */
+        Popup.prototype.stopEventPropagation = function() {
+          var anchor = this.anchor;
+          anchor.style.cursor = 'auto';
+
+          anchor.addEventListener('click', function(e) {
+            $(anchor).toggleClass('open')
+            $(anchor).find('.popup-bubble-content').html(`
+              <h2 class="heading-medium">
+                <a href="/course/17B/2P4V">Biology with CAT Teaching School</a>
+              </h2>
+              <dl class="aligned">
+                <dt>Course offered:</dt>
+                <dd>PGCE with QTS, full time</dd>
+
+                 <dt>Accredited provider:</dt>
+                 <dd>The University of Warwick</dd>
+
+
+                  <dt>Distance:</dt>
+                  <dd>8 miles</dd>
+                  <!-- <dd>8 miles to nearest school</dd> -->
+
+                <dt>
+                  <!--
+                    Nearest school:
+                  -->
+                  Address:
+                </dt>
+                <dd>
+                  Dordon Road, Tamworth,  B78 1QN
+                </dd>
+                <dt>
+                  Financial support:
+                </dt>
+                <dd>
+                  Bursary or Student finance if you’re eligible
+                </dd>
+              </dl>
+            `);
+            e.stopPropagation();
+          });
+
+          ['click', 'dblclick', 'contextmenu', 'wheel', 'mousedown', 'touchstart',
+           'pointerdown']
+              .forEach(function(event) {
+                anchor.addEventListener(event, function(e) {
+                  console.log(event, e);
+                  e.stopPropagation();
+                });
+              });
+        };
+      }
+
+      definePopupClass();
       bounds = new google.maps.LatLngBounds();
 
       map = new google.maps.Map(document.getElementById('map'), {
@@ -291,37 +476,45 @@
         var address = results[i]['providerAddress'];
         var title = `${results[i]['name']} with ${results[i]['provider']}`;
 
-        var marker = new google.maps.Marker({
-          position: { lat: address['latitude'], lng: address['longitude'] },
-          map: map,
-          title: title,
-          icon: customMarker
-        });
+        var el = document.createElement("div");
+        el.innerHTML = results[i]['provider'];
 
-        //marker.addListener('click', showCoursePane.bind(null, results[i]['slug'], marker));
-        marker.addListener('click', showInfoWindow.bind(null, results[i]['slug'], marker));
+        if (el) {
+          var popup = new Popup(new google.maps.LatLng(address['latitude'], address['longitude']), el);
+          popup.setMap(map);
+        }
 
-        loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
-        bounds.extend(loc);
+        // var marker = new google.maps.Marker({
+        //   position: { lat: address['latitude'], lng: address['longitude'] },
+        //   map: map,
+        //   title: title,
+        //   icon: customMarker
+        // });
+        //
+        // //marker.addListener('click', showCoursePane.bind(null, results[i]['slug'], marker));
+        // marker.addListener('click', showInfoWindow.bind(null, results[i]['slug'], marker));
+        //
+        // loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
+        // bounds.extend(loc);
       }
 
-      for (var i = 0, l = addresses.length; i < l; i++) {
-        var address = addresses[i];
-        var title = address.address;
-
-        var marker = new google.maps.Marker({
-          position: { lat: address['latitude'], lng: address['longitude'] },
-          map: map,
-          title: title,
-          icon: dot
-        });
-
-        //marker.addListener('click', showCoursePane.bind(null, results[i]['slug'], marker));
-        marker.addListener('click', showAddrInfoWindow.bind(null, address.course.slug, marker));
-
-        //loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
-        //bounds.extend(loc);
-      }
+      // for (var i = 0, l = addresses.length; i < l; i++) {
+      //   var address = addresses[i];
+      //   var title = address.address;
+      //
+      //   var marker = new google.maps.Marker({
+      //     position: { lat: address['latitude'], lng: address['longitude'] },
+      //     map: map,
+      //     title: title,
+      //     icon: dot
+      //   });
+      //
+      //   //marker.addListener('click', showCoursePane.bind(null, results[i]['slug'], marker));
+      //   marker.addListener('click', showAddrInfoWindow.bind(null, address.course.slug, marker));
+      //
+      //   //loc = new google.maps.LatLng(marker.position.lat(), marker.position.lng());
+      //   //bounds.extend(loc);
+      // }
 
       var marker = new google.maps.Marker({
         position: { lat: {{ data['latLong']['lat']}}, lng: {{ data['latLong']['lng']}}},
@@ -407,6 +600,7 @@
         infoWindow.setContent($(selector).html());
         infoWindow.setOptions({ maxWidth: 300 })
         infoWindow.open(map, marker)
+        marker.hide();
       }
 
       function showCoursePane(id, marker) {
