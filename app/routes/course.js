@@ -8,11 +8,7 @@ module.exports = router => {
     try {
       const courseSingleResponse = await teacherTrainingService.getCourse(providerCode, courseCode)
       const course = utils.decorateCourse(courseSingleResponse.data.attributes)
-
-      // Get travel areas that school placements lie within
-      // Fake it by adding current travel area being to list of placements
-      const fakedPlacementArea = req.session.data.area ? req.session.data.area.name : false
-      const placementAreas = await utils.getPlacementAreas(providerCode, courseCode, fakedPlacementArea)
+      const placementAreas = utils.getPlacementAreas(course.sites)
 
       res.render('course', { course, placementAreas })
     } catch (error) {

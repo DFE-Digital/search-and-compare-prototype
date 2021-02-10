@@ -39,12 +39,12 @@ module.exports = () => {
     }
 
     // Qualification
-    if (course.qualifications.length === 2 && course.qualifications.includes('pgce')) {
+    if (course.qualification === 'pgce_with_qts') {
       course.qualification = 'PGCE with QTS'
-    } else if (course.qualifications.length === 2 && course.qualifications.includes('pgde')) {
+    } else if (course.qualifications === 'pgde_with_qts') {
       course.qualification = 'PGDE with QTS'
     } else {
-      course.qualification = course.qualifications[0].toUpperCase()
+      course.qualification = course.qualification[0].toUpperCase()
     }
 
     // Funding
@@ -196,7 +196,32 @@ module.exports = () => {
     }))
   }
 
-  utils.getPlacementAreas = async (providerCode, courseCode, fakedPlacementArea) => {
+  utils.getPlacementAreas = sites => {
+    let placementAreas = []
+
+    // Get TTWA and London Boroughs from each site
+    sites.forEach(site => {
+      if (site.travel_to_work_area) {
+        placementAreas.push(site.travel_to_work_area)
+      }
+
+      if (site.london_borough) {
+        placementAreas.push(site.london_borough)
+      }
+
+      return placementAreas
+    })
+
+    // Remove duplicate placement areas
+    placementAreas = [...new Set(placementAreas)]
+
+    // Sort placement areas automatically
+    placementAreas = placementAreas.sort()
+
+    return placementAreas
+  }
+
+  utils.getFakedPlacementAreas = async (providerCode, courseCode, fakedPlacementArea) => {
     const LocationListResponse = await teacherTrainingService.getCourseLocations(providerCode, courseCode)
 
     // Get catchment areas that locations lie within

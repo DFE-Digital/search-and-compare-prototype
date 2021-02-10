@@ -1,6 +1,6 @@
 {% extends "_layouts/default.njk" %}
 
-{% set title %}{{ course.name }} ({{ course.code }}) with {{ course.provider.name }}{% endset %}
+{% set title %}{{ course.name }} ({{ course.course_code }}) with {{ course.provider.provider_name }}{% endset %}
 
 {% block pageNavigation %}
   {{ govukBackLink({
@@ -11,8 +11,8 @@
 
 {% block content %}
   <h1 class="govuk-heading-xl">
-    <span class="govuk-heading-l govuk-!-margin-bottom-1">{{ course.provider.name }}</span>
-    {{ course.name }} ({{ course.code }})
+    <span class="govuk-heading-l govuk-!-margin-bottom-1">{{ course.provider.provider_name }}</span>
+    {{ course.name }} ({{ course.course_code }})
   </h1>
 
   <p class="govuk-body-l">{{ course.summary }}</p>
@@ -20,7 +20,7 @@
   <dl class="app-list--description govuk-!-margin-bottom-8">
     {% if course.accredited_body_code %}
       <dt>Accredited body</dt>
-      <dd>{{ course.provider.name }}</dd>
+      <dd>{{ course.provider.provider_name }}</dd>
     {% endif %}
     <dt>Financial support</dt>
     <dd>{{ course.funding_option }}</dd>
@@ -29,7 +29,7 @@
       {{ govukDetails({
         summaryText: "PGCE with QTS",
         html: data.qualificationOptions[1].hint | markdown | safe
-      } if "pgce" in course.qualifications else {
+      } if course.qualification == "PGCE with QTS" else {
         summaryText: "QTS",
         html: data.qualificationOptions[0].hint | markdown | safe
       }) }}

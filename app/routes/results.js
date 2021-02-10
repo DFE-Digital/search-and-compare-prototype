@@ -121,7 +121,7 @@ module.exports = router => {
             const selectedLondonBoroughs = londonBoroughItems.map(item => item.text)
             fakedPlacementArea = selectedLondonBoroughs[0] || area.name
           }
-          const placementAreas = await utils.getPlacementAreas(provider.code, course.code, fakedPlacementArea)
+          const placementAreas = await utils.getFakedPlacementAreas(provider.code, course.code, fakedPlacementArea)
 
           return {
             course,

@@ -1,5 +1,6 @@
 module.exports = {
-  apiEndpoint: 'https://api.publish-teacher-training-courses.service.gov.uk/api/public/v1',
+  privateApiEndpoint: 'https://api.publish-teacher-training-courses.service.gov.uk/api/v3/',
+  publicApiEndpoint: 'https://api.publish-teacher-training-courses.service.gov.uk/api/public/v1',
   cycle: 2021,
   defaults: {
     latitude: false,
